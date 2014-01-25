@@ -1,9 +1,12 @@
+import java.util.ArrayList;
+
 
 public class User implements Node {
 
 	
 	private String name;
 	private String email;
+	private ArrayList<Edge> edges;
 	
 	public User()
 	{}
@@ -11,6 +14,15 @@ public class User implements Node {
 	{
 		this.setName(name);
 		this.setEmail(email);
+		edges=new ArrayList<Edge>();
+	}
+	public void addEdge(Edge e)
+	{
+		edges.add(e);
+	}
+	public ArrayList<Edge> getEdges()
+	{
+		return edges;
 	}
 	@Override
 	public Node getNode() {
