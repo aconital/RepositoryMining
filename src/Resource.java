@@ -1,28 +1,26 @@
+import java.util.ArrayList;
+
 
 public class Resource implements Node{
 
 	private String filename;
+	private ArrayList<Edge> edges;
 	
 	public Resource (){}
 	public Resource (String filename)
 	{
 		this.filename=filename;
+		edges=new ArrayList<Edge>();
 	}
 	
 	@Override
 	public Node getNode() {
 		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	@Override
-	public Node getNodeDetails() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Node getIntractionwith(Node n) {
+	public String getIntractionwith(Node n) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -40,5 +38,13 @@ public class Resource implements Node{
 	public  void setFilename(String filename) {
 		this.filename = filename;
 	}
-
+	@Override
+	public ArrayList<Edge> getEdges() {
+		// TODO Auto-generated method stub
+		return edges;
+	}
+	public void addEdge(Edge e)
+	{
+		edges.add(e);
+	}
 }

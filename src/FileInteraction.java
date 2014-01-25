@@ -11,7 +11,12 @@ public class FileInteraction implements Edge {
 		this.user=user;
 		
 	}
-
+	public FileInteraction(Resource rsc,User user,String data)
+	{	this.data=data;
+		this.rsc=rsc;
+		this.user=user;
+		
+	}
 	public String getData()
 	{
 		return data;
@@ -22,8 +27,19 @@ public class FileInteraction implements Edge {
 	}
 
 	@Override
-	public void setNode(Node n) {
-		// TODO Auto-generated method stub
+	public void setNode(Node n,int nodeType) {
+		if(nodeType == Constants.RESOURCE)
+			rsc= (Resource)n;
+		else
+			user=(User)n;
 		
+	}
+
+
+
+	@Override
+	public boolean hasNode(Node n) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

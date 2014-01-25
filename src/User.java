@@ -2,8 +2,6 @@ import java.util.ArrayList;
 
 
 public class User implements Node {
-
-	
 	private String name;
 	private String email;
 	private ArrayList<Edge> edges;
@@ -27,19 +25,20 @@ public class User implements Node {
 	@Override
 	public Node getNode() {
 		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
-	@Override
-	public Node getNodeDetails() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
-	public Node getIntractionwith(Node n) {
-		// TODO Auto-generated method stub
-
+	public String getIntractionwith(Node n) {
+		for(Edge e:edges)
+		{
+			if(e.hasNode(n))
+			{
+				return e.getData();
+			}
+		}
+					
 		return null;
 	}
 	/**
