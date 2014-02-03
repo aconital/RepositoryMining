@@ -2,16 +2,16 @@
 public class UserInteraction implements Edge {
 
 	private String data;
-	private User user1;
-	private User user2;
+	private Person user1;
+	private Person user2;
 	
-	public UserInteraction(User user1,User user2)
+	public UserInteraction(Person user1,Person user2)
 	{
 		this.user1=user1;
 		this.user2=user2;
 		
 	}
-	public UserInteraction(User user1,User user2,String data)
+	public UserInteraction(Person user1,Person user2,String data)
 	{
 		this.user1=user1;
 		this.user2=user2;
@@ -27,18 +27,11 @@ public class UserInteraction implements Edge {
 		this.data=data;
 	}
 
-	@Override
-	public void setNode(Node n,int userNum) {
-		if (userNum == Constants.USER_1)
-			user1=(User)n;
-		else
-			user2=(User)n;
-		
-	}
+
 
 	@Override
 	public boolean hasNode(Node n) {
-		User temp= (User)n;
+		Person temp= (Person)n;
 		if(temp.equals(user1) || temp.equals(user2))
 			return true;
 		return false;

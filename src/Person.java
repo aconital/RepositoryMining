@@ -1,14 +1,14 @@
 import java.util.ArrayList;
 
 
-public class User implements Node {
+public class Person implements Node {
 	private String name;
 	private String email;
 	private ArrayList<Edge> edges;
 	
-	public User()
+	public Person()
 	{}
-	public User(String name,String email)
+	public Person(String name,String email)
 	{
 		this.setName(name);
 		this.setEmail(email);

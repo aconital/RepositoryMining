@@ -3,15 +3,15 @@ public class FileInteraction implements Edge {
 
 	private String data;
 	private Resource rsc;
-	private User user;
+	private Person user;
 	
-	public FileInteraction(Resource rsc,User user)
+	public FileInteraction(Resource rsc,Person user)
 	{
 		this.rsc=rsc;
 		this.user=user;
 		
 	}
-	public FileInteraction(Resource rsc,User user,String data)
+	public FileInteraction(Resource rsc,Person user,String data)
 	{	this.data=data;
 		this.rsc=rsc;
 		this.user=user;
@@ -26,14 +26,7 @@ public class FileInteraction implements Edge {
 		this.data=data;
 	}
 
-	@Override
-	public void setNode(Node n,int nodeType) {
-		if(nodeType == Constants.RESOURCE)
-			rsc= (Resource)n;
-		else
-			user=(User)n;
-		
-	}
+
 
 
 
