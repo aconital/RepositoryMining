@@ -1,3 +1,6 @@
+import java.util.Calendar;
+import java.util.Date;
+
 
 public class FileInteraction implements Edge {
 
@@ -34,5 +37,10 @@ public class FileInteraction implements Edge {
 	public boolean hasNode(Node n) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+	@Override
+	public Calendar getDate() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
