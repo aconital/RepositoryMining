@@ -1,43 +1,67 @@
 import java.util.Calendar;
-
-
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class UserInteraction implements Edge {
 
-	private String data;
 	private Person user1;
 	private Person user2;
-	private Calendar  date;
+	private HashMap<Calendar,String> interaction;
 	
-	public UserInteraction(Person user1,Person user2)
+	public UserInteraction(Node user1,Node user2)
 	{
-		this.user1=user1;
-		this.user2=user2;
+		this.user1=(Person) user1;
+		this.user2=(Person) user2;
+		interaction=new HashMap<Calendar, String>();
 		
 	}
-	public UserInteraction(Person user1,Person user2,String data,Calendar  date)
+	public void addInteraction(Calendar date,String data)
 	{
-		this.user1=user1;
-		this.user2=user2;
-		this.data=data;
-		this.date=date;
-		
+		interaction.put(date, data);
 	}
-	public String getData()
+	public String getData(Calendar date)
 	{
-		return data;
+		return interaction.get(date);
 	}
-	public Calendar   getDate()
+	
+	public Node getHead()
+	{return user1;}
+	public Node getTail()
+	{return user2;}
+	public boolean hasData(String data)
 	{
-		return date;
-	}
-
-	@Override
-	public boolean hasNode(Node n) {
-		Person temp= (Person)n;
-		if(temp.equals(user1) || temp.equals(user2))
+		if(interaction.containsValue(data))
 			return true;
 		return false;
+	}
+	@Override
+	public boolean hasNode(Node n1,Node n2) {
+		Person temp1= (Person)n1;
+		Person temp2= (Person)n2;
+		if((temp1.equals(user1) && temp2.equals(user2)) || 
+		   (temp1.equals(user2) && temp2.equals(user1)))
+			return true;
+		return false;
+	}
+	@Override
+	public String DateToString(Calendar date) {
+		int year=date.get(Calendar.YEAR);;
+		int month=date.get(Calendar.MONTH);;
+		int day=date.get(Calendar.DAY_OF_MONTH);
+		String stringDate= Integer.toString(year)+"/"+Integer.toString(month)+"/"+Integer.toString(day);
+
+		return stringDate;
+	}
+	
+	public void printDetails()
+	{	System.out.println("**********************");
+		System.out.println("user1: "+user1.getName()+" User2: "+user2.getName());
+		Iterator it= interaction.keySet().iterator();
+		while(it.hasNext())
+		{	Calendar key=(Calendar) it.next();
+			System.out.println("Date: "+key.getTimeInMillis()+" Data: "+interaction.get(key));
+		}
+		System.out.println("**********************");
 	}
 	
 }

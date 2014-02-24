@@ -34,13 +34,19 @@ public class FileInteraction implements Edge {
 
 
 	@Override
-	public boolean hasNode(Node n) {
+	public boolean hasNode(Node n1,Node n2) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 	@Override
-	public Calendar getDate() {
+	public String getData(Calendar date) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	@Override
+	public String DateToString(Calendar date) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

@@ -28,16 +28,19 @@ public class Person implements Node {
 		return this;
 	}
 
-
+/* 
+ * 	FIIIIIXXX THISSS
+ * 
+ */
 	@Override
 	public String getIntractionwith(Node n) {
-		for(Edge e:edges)
-		{
-			if(e.hasNode(n))
-			{
-				return e.getData();
-			}
-		}
+	//	for(Edge e:edges)
+	//	{
+		//	if(e.hasNode(n))
+	//		{
+		//		return e.getData();
+	//		}
+	//	}
 					
 		return null;
 	}
