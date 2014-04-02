@@ -4,6 +4,8 @@ import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Paint;
 import java.awt.Stroke;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.io.ObjectInputStream.GetField;
 import java.util.ArrayList;
@@ -46,8 +48,12 @@ import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseGraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.LayoutScalingControl;
+import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 
 import java.util.Scanner;
@@ -55,34 +61,41 @@ import java.util.Scanner;
 import javax.swing.JFrame;
 
 public class SocialCodeGraph {
-	static GitHubClient client = new GitHubClient();
-	private static String oAuthKey="50ec05b630c6d418473809c9f8946f18df33dd7e";
-	//##########################
-	//no static -refactor later
-	//##########################
-	private static Set<UserInteraction> userInts;
-	private static Set<Person> users;
-	private static Set<FileInteraction> fileInts;
-	private static Set<Resource> resources;
+	private  GitHubClient client;
+	private  String oAuthKey;
+	private  Set<UserInteraction> userInts;
+	private  Set<Person> users;
+	private  Set<FileInteraction> fileInts;
+	private  Set<Resource> resources;
 
-	private static  DirectedGraph<Node, Edge> graph =new DirectedSparseMultigraph<Node, Edge>();
+	private SparseGraph<Node, Edge> graph;
+
+	public SocialCodeGraph()
+	{	client = new GitHubClient();
+	oAuthKey="50ec05b630c6d418473809c9f8946f18df33dd7e";
+	userInts = new HashSet<UserInteraction>();
+	fileInts=new HashSet<FileInteraction>();
+	resources=new HashSet<Resource>();
+	users=new HashSet<Person>();
+	graph =new SparseGraph<Node, Edge>();
+	}
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 
-
+		SocialCodeGraph scg=new SocialCodeGraph();
 		//Finding the right Repository (NEED REFACTOR)
-		client.setOAuth2Token(oAuthKey);
+		scg.getGitClient().setOAuth2Token(scg.getOAuth());
 		Scanner userInputScanner = new Scanner(System.in);
 		System.out.println("Please Enter the repository name");
 		String query= userInputScanner.nextLine();
-		List<SearchRepository> repoList= searchRepositories(query);
+		List<SearchRepository> repoList= scg.searchRepositories(query);
 		while(repoList.size()==0)
 		{
 			System.out.println("We couldn't find any Repository with that name.Try again");
 			query= userInputScanner.nextLine();
-			repoList= searchRepositories(query);
+			repoList= scg.searchRepositories(query);
 		}
 		System.out.println("We have found these repositories.Please enter the index of the one which you are intrested in.");
 		int indexOfRepo= userInputScanner.nextInt();
@@ -91,18 +104,19 @@ public class SocialCodeGraph {
 		System.out.println("Please Wait! Processing...");
 
 
-		populateSystem(selectedRepo);
+		scg.populateSystem(selectedRepo);
 
-		createGraph();
+		scg.createGraph();
 
 
 	}
 
-	public static void createGraph()
+	public void createGraph()
 	{		for(UserInteraction ui: userInts)
-	{	graph.addVertex(ui.getHead());
-	graph.addVertex(ui.getTail());
-	graph.addEdge(ui, ui.getHead(), ui.getTail());
+	{	
+		graph.addVertex(ui.getHead());
+		graph.addVertex(ui.getTail());
+		graph.addEdge(ui, ui.getHead(), ui.getTail());
 	}
 	for(FileInteraction fi:fileInts)
 	{
@@ -113,12 +127,54 @@ public class SocialCodeGraph {
 	Layout<Node, Edge> layout = new CircleLayout(graph);
 	//   layout.setSize(new Dimension(500,500));
 
-	BasicVisualizationServer<Node,Edge> vv = new BasicVisualizationServer<Node,Edge>(layout);
+	VisualizationViewer<Node,Edge> vv = new VisualizationViewer<Node,Edge>(layout);
 	vv.setPreferredSize(new Dimension(700,700));    
 	vv.setGraphLayout(layout);
 	vv.scaleToLayout(new LayoutScalingControl());
 	//  vv.setAutoscrolls(true);
+	DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
+	gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
+	vv.setGraphMouse(gm); 
+	// Add the mouses mode key listener to work it needs to be added to the visualization component
+	vv.addKeyListener(gm.getModeKeyListener());
+	//picked NODE
+	final PickedState<Node> pickedNodeState = vv.getPickedVertexState();
+	//picked EDGE
+	final PickedState<Edge> pickedinteractionState = vv.getPickedEdgeState();
+	//listener for picked node
+	pickedNodeState.addItemListener(new ItemListener() {
 
+		@Override
+		public void itemStateChanged(ItemEvent e) {
+			Object subject = e.getItem();
+			if (subject instanceof Person) {
+				Person vertex = (Person) subject;
+				if (pickedNodeState.isPicked(vertex)) {
+					System.out.println("Name:"+vertex.getName()+" Email:"+vertex.getEmail());
+				}
+				else if (subject instanceof Resource)
+				{
+					Resource file = (Resource) subject;
+					if (pickedNodeState.isPicked(file)) {
+						System.out.println("Filename:"+file.getFilename());
+					}
+				}
+
+			}}});
+	//LISTENER for picked edge
+	pickedinteractionState.addItemListener(new ItemListener() {
+
+		@Override
+		public void itemStateChanged(ItemEvent e) {
+			Object subject = e.getItem();
+			if(subject instanceof Edge)
+			{
+				Edge interaction = (Edge) subject;
+				if (pickedinteractionState.isPicked(interaction)) {
+					interaction.printDetails();
+			}
+		}}}
+			);
 	vv.setBounds(0, 0, 700, 700);
 	// Setup up a new vertex to paint transformer...
 	Transformer<Node,Paint> vertexPaint = new Transformer<Node,Paint>() {
@@ -162,14 +218,11 @@ public class SocialCodeGraph {
 	}
 
 
-	public static void populateSystem(SearchRepository repo)
+	public void populateSystem(SearchRepository repo)
 	{
 		IssueService issue=new IssueService(client);
 		List<Comment> comments;
-		userInts = new HashSet<UserInteraction>();
-		fileInts=new HashSet<FileInteraction>();
-		resources=new HashSet<Resource>();
-		users=new HashSet<Person>();
+
 
 		Map<String,String> params =new HashMap<String,String>();
 		params.put("state", "open");
@@ -203,10 +256,10 @@ public class SocialCodeGraph {
 			{
 				RepositoryCommit repCommit=cs.getCommit(repo, sha);
 				if(repCommit!=null){
-				List<CommitFile> commitFileList=repCommit.getFiles();
-				User user=repCommit.getCommitter();
-				String commiter="";	
-				if(user!=null){
+					List<CommitFile> commitFileList=repCommit.getFiles();
+					User user=repCommit.getCommitter();
+					String commiter="";	
+					if(user!=null){
 						commiter=user.getLogin();
 						String message=repCommit.getCommit().getMessage();
 						//API CURRENTLY DOESNT HAVE DATE
@@ -237,52 +290,52 @@ public class SocialCodeGraph {
 
 
 	}
-	private static void createFileInteraction(String commiter,List<CommitFile> commitFileList,String sha,String message) 
+	private  void createFileInteraction(String commiter,List<CommitFile> commitFileList,String sha,String message) 
 	{
 		Person user=userFinder(commiter);
 		Resource resource;
 
 		for(CommitFile cf:commitFileList)
 		{	
-		
+
 			resource=resourceFinder(cf.getFilename());
 			FileInteractionFinder(resource,user,sha,message);
 		}
 	}
-	private static void FileInteractionFinder(Resource rsc,Person user,String sha,String data)
+	private  void FileInteractionFinder(Resource rsc,Person user,String sha,String data)
 	{
-			if(rsc==null || user== null)
-				return;
-			
-			for(FileInteraction fi: fileInts)
-			{
-				if(fi.hasNode(rsc, user))
-				{
-					if(!fi.hasData(data))
-					{
-						fi.addInteraction(sha, data);
-						return;
-					}
-				}
-			}
-			FileInteraction fileInt=new FileInteraction(rsc, user);
-			fileInt.addInteraction(sha, data);
-			fileInts.add(fileInt);
+		if(rsc==null || user== null)
 			return;
 
-	}
-	private static Resource resourceFinder(String name)
-	{	for(Resource rsc:resources)
+		for(FileInteraction fi: fileInts)
 		{
+			if(fi.hasNode(rsc, user))
+			{
+				if(!fi.hasData(data))
+				{
+					fi.addInteraction(sha, data);
+					return;
+				}
+			}
+		}
+		FileInteraction fileInt=new FileInteraction(rsc, user);
+		fileInt.addInteraction(sha, data);
+		fileInts.add(fileInt);
+		return;
+
+	}
+	private  Resource resourceFinder(String name)
+	{	for(Resource rsc:resources)
+	{
 		if(rsc.getFilename().equals(name))
 			return rsc;
-		}
-		Resource r=new Resource(name);
-		resources.add(r);
-		return r;
+	}
+	Resource r=new Resource(name);
+	resources.add(r);
+	return r;
 	}
 
-	private static void createCommenterInteraction(Issue xissue, List<Comment> comments) {
+	private  void createCommenterInteraction(Issue xissue, List<Comment> comments) {
 		Person user1;
 		Person user2;
 		//between commenters
@@ -306,7 +359,7 @@ public class SocialCodeGraph {
 
 	}
 
-	private static void createAssigneeInteraction(Issue xissue,List<Comment> comments) {
+	private  void createAssigneeInteraction(Issue xissue,List<Comment> comments) {
 		Person user1;
 		Person user2;
 		if(xissue.getAssignee()== null)
@@ -333,7 +386,7 @@ public class SocialCodeGraph {
 			}
 		}
 	}
-	private static void UserInteractionFinder(Person user1,Person user2,Calendar date,String data)
+	private void UserInteractionFinder(Person user1,Person user2,Calendar date,String data)
 	{	if(user1.equals(user2))
 		return;
 
@@ -351,7 +404,7 @@ public class SocialCodeGraph {
 	userInts.add(userInt);
 	return;
 	}
-	private static Person userFinder(String name)
+	private Person userFinder(String name)
 	{	for(Person user:users)
 	{
 		if(user.getName().toString().equals(name))
@@ -361,7 +414,7 @@ public class SocialCodeGraph {
 	users.add(p);
 	return p;
 	}
-	private static Person userCreation(String name)	
+	private  Person userCreation(String name)	
 	{	
 		UserService u=new UserService(client);
 		User gitUser;
@@ -377,12 +430,12 @@ public class SocialCodeGraph {
 		return user;
 
 	}
-	private static Calendar DateToCalendar(Date date){ 
+	private  Calendar DateToCalendar(Date date){ 
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		return cal;
 	}
-	public static List<SearchRepository> searchRepositories(String query)
+	public  List<SearchRepository> searchRepositories(String query)
 	{	List<SearchRepository> repoList = null;
 
 	RepositoryService repo=new RepositoryService(client);
@@ -396,4 +449,9 @@ public class SocialCodeGraph {
 	}
 	return repoList;
 	}
+
+	public String getOAuth()
+	{return oAuthKey;}
+	public GitHubClient getGitClient()
+	{return client;}
 }
