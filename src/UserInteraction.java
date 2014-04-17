@@ -3,7 +3,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class UserInteraction implements Edge {
-
+	//person-person based on file interact
+	//adding date 
 	private Person user1;
 	private Person user2;
 	private HashMap<Calendar,String> interaction;
@@ -59,7 +60,7 @@ public class UserInteraction implements Edge {
 		Iterator it= interaction.keySet().iterator();
 		while(it.hasNext())
 		{	Calendar key=(Calendar) it.next();
-			System.out.println("Date: "+key.getTimeInMillis()+" Data: "+interaction.get(key));
+			System.out.println("Date: "+key.getTime().toString()+" Data: "+interaction.get(key));
 		}
 		System.out.println("**********************");
 	}

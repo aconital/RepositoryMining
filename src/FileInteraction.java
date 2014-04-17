@@ -6,7 +6,7 @@ import java.util.Iterator;
 
 public class FileInteraction implements Edge {
 	//change this to calender
-	private HashMap<String,String> interaction;
+	private HashMap<Calendar,String> interaction;
 	private Resource rsc;
 	private Person user;
 	
@@ -14,7 +14,7 @@ public class FileInteraction implements Edge {
 	{
 		this.rsc=rsc;
 		this.user=user;
-		interaction=new HashMap<String, String>();
+		interaction=new HashMap<Calendar, String>();
 	}
 	public FileInteraction(Resource rsc,Person user,String data)
 	{	
@@ -23,13 +23,13 @@ public class FileInteraction implements Edge {
 		
 	}
 
-	public void addInteraction(String sha,String data)
+	public void addInteraction(Calendar date,String data)
 	{
-		interaction.put(sha, data);
+		interaction.put(date, data);
 	}
-	public String getData(Calendar sha)
+	public String getData(Calendar date)
 	{
-		return interaction.get(sha);
+		return interaction.get(date);
 	}
 
 
@@ -52,13 +52,13 @@ public class FileInteraction implements Edge {
 		return false;
 	}
 	@Override
-	public String DateToString(Calendar sha) {
-		int year=sha.get(Calendar.YEAR);;
-		int month=sha.get(Calendar.MONTH);;
-		int day=sha.get(Calendar.DAY_OF_MONTH);
-		String stringsha= Integer.toString(year)+"/"+Integer.toString(month)+"/"+Integer.toString(day);
+	public String DateToString(Calendar date) {
+		int year=date.get(Calendar.YEAR);;
+		int month=date.get(Calendar.MONTH);;
+		int day=date.get(Calendar.DAY_OF_MONTH);
+		String stringDate= Integer.toString(year)+"/"+Integer.toString(month)+"/"+Integer.toString(day);
 
-		return stringsha;
+		return stringDate;
 	}
 	
 	public void printDetails()
@@ -66,8 +66,8 @@ public class FileInteraction implements Edge {
 		System.out.println("File: "+rsc.getFilename()+" User: "+user.getName());
 		Iterator it= interaction.keySet().iterator();
 		while(it.hasNext())
-		{	String key=(String) it.next();
-			System.out.println("sha: "+key+" Data: "+interaction.get(key));
+		{	Calendar key=(Calendar) it.next();
+			System.out.println("date: "+key.getTime().toString()+" Data: "+interaction.get(key));
 		}
 		System.out.println("**********************");
 	}

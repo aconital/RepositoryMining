@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,7 +60,22 @@ import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import java.util.Scanner;
 
 import javax.swing.JFrame;
-
+/*
+ * Application: Repository Miner
+ * Author: Hirad Roshandel
+ * Date:January-April 2014
+ * 
+ * This is an early version of a repository mining application which goes through
+ * a github repository and gathers information and creates a network between all users and files
+ * who had interacted with each other [currently] through issues and commits and draws a graph
+ * 
+ * HOW TO: (1)Simply run the application and type in the name of the repository which you are 
+ * looking for. The application searches within GitHub for all repository which similar name
+ * (2) Enter the index number of the repository which you are looking
+ * (3) Once the graph is created, use mouse scroll to zoom in/out, User T and P buttons to toggle
+ * between picking mode and camera mode. In picking mode you can select a node and move it around.
+ * In camera mode you can pan and move the camera. 
+ */
 public class SocialCodeGraph {
 	private  GitHubClient client;
 	private  String oAuthKey;
@@ -172,8 +188,8 @@ public class SocialCodeGraph {
 				Edge interaction = (Edge) subject;
 				if (pickedinteractionState.isPicked(interaction)) {
 					interaction.printDetails();
-			}
-		}}}
+				}
+			}}}
 			);
 	vv.setBounds(0, 0, 700, 700);
 	// Setup up a new vertex to paint transformer...
@@ -244,38 +260,46 @@ public class SocialCodeGraph {
 			//PullRequest Section
 
 			List<RepositoryCommit> repositoryCommitList;
-			Set<String> shaList =new HashSet<String>();
+			Map<String,Calendar> shaList =new HashMap<String,Calendar>();
 			CommitService cs=new CommitService(client);
 			repositoryCommitList=cs.getCommits(repo);
-
+			Calendar date;
+			String sha;
 			for(RepositoryCommit rc:repositoryCommitList)	
-			{	
-				shaList.add(rc.getSha());			
+			{	 date=DateToCalendar(rc.getCommit().getCommitter().getDate());
+			sha=rc.getSha();
+			shaList.put(sha,date);	
+
 			}
-			for(String sha:shaList)
-			{
+			Iterator iter = shaList.keySet().iterator();
+			while(iter.hasNext()) {
+				sha = (String)iter.next();
+				date = (Calendar)shaList.get(sha);
 				RepositoryCommit repCommit=cs.getCommit(repo, sha);
 				if(repCommit!=null){
 					List<CommitFile> commitFileList=repCommit.getFiles();
+
 					User user=repCommit.getCommitter();
 					String commiter="";	
 					if(user!=null){
 						commiter=user.getLogin();
 						String message=repCommit.getCommit().getMessage();
-						//API CURRENTLY DOESNT HAVE DATE
-						createFileInteraction(commiter,commitFileList,sha,message);
+						createFileInteraction(commiter,commitFileList,date,message);
 					}
 				}
 
 			}
-			for(FileInteraction fi:fileInts)
+			//TODO: Remove this part if you want the console to be clear
+			/*
+			 * This Part is only to show that system is populated correctly
+			 */
+			for(FileInteraction r:fileInts)
 			{
-				fi.printDetails();
+				r.printDetails();
 			}
-			//######### CREATE UI#########
-			for(UserInteraction ui:userInts)
+			for(UserInteraction u:userInts)
 			{
-				ui.printDetails();
+				u.printDetails();
 			}
 
 		} catch (IOException e) {
@@ -283,14 +307,8 @@ public class SocialCodeGraph {
 			e.printStackTrace();
 		}
 
-
-
-
-
-
-
 	}
-	private  void createFileInteraction(String commiter,List<CommitFile> commitFileList,String sha,String message) 
+	private  void createFileInteraction(String commiter,List<CommitFile> commitFileList,Calendar date,String message) 
 	{
 		Person user=userFinder(commiter);
 		Resource resource;
@@ -299,10 +317,10 @@ public class SocialCodeGraph {
 		{	
 
 			resource=resourceFinder(cf.getFilename());
-			FileInteractionFinder(resource,user,sha,message);
+			FileInteractionFinder(resource,user,date,message);
 		}
 	}
-	private  void FileInteractionFinder(Resource rsc,Person user,String sha,String data)
+	private  void FileInteractionFinder(Resource rsc,Person user,Calendar date,String data)
 	{
 		if(rsc==null || user== null)
 			return;
@@ -313,13 +331,13 @@ public class SocialCodeGraph {
 			{
 				if(!fi.hasData(data))
 				{
-					fi.addInteraction(sha, data);
+					fi.addInteraction(date, data);
 					return;
 				}
 			}
 		}
 		FileInteraction fileInt=new FileInteraction(rsc, user);
-		fileInt.addInteraction(sha, data);
+		fileInt.addInteraction(date, data);
 		fileInts.add(fileInt);
 		return;
 
