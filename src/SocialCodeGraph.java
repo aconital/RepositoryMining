@@ -1,14 +1,11 @@
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
-import java.io.ObjectInputStream.GetField;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -20,35 +17,20 @@ import java.util.Set;
 
 import org.apache.commons.collections15.Transformer;
 import org.eclipse.egit.github.core.Comment;
-import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.Issue;
-import org.eclipse.egit.github.core.PullRequest;
-import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryCommit;
-import org.eclipse.egit.github.core.RepositoryIssue;
-import org.eclipse.egit.github.core.SearchIssue;
 import org.eclipse.egit.github.core.SearchRepository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.event.IssueCommentPayload;
-import org.eclipse.egit.github.core.event.PullRequestPayload;
 import org.eclipse.egit.github.core.service.CommitService;
-import org.eclipse.egit.github.core.service.GitHubService;
 import org.eclipse.egit.github.core.service.IssueService;
-import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.StaticLayout;
-import edu.uci.ics.jung.graph.DirectedGraph;
-import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
-import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseGraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.LayoutScalingControl;
@@ -249,15 +231,15 @@ public class SocialCodeGraph {
 			{
 
 				comments=issue.getComments(repo, xissue.getNumber());
-
+				//User-User interactions
 				//Creating an edge between Asignee and others
 				createAssigneeInteraction(xissue,comments);
 				//Creating an edge between Creator & commenter (Think when creator comments again?!)
 				createCommenterInteraction(xissue,comments);
 			}
+			System.out.println("User-User Interactions: Done!\nUser-File Interactions: Procesing...\nUser-File-User Interactions: Waiting...\n******************** ");
 
-
-			//PullRequest Section
+			//PullRequest Section- File-User Interactions
 
 			List<RepositoryCommit> repositoryCommitList;
 			Map<String,Calendar> shaList =new HashMap<String,Calendar>();
@@ -289,10 +271,33 @@ public class SocialCodeGraph {
 				}
 
 			}
-			//TODO: Remove this part if you want the console to be clear
-			/*
+			System.out.println("User-User Interactions: Done!\nUser-File Interactions: Done!\nUser-File-User Interactions: Processing...\n******************** ");
+			
+			//User-File-User Interactions
+			/*TODO: Remove this part if you want the console to be cleared
 			 * This Part is only to show that system is populated correctly
 			 */
+			String file1,file2,user1,user2=null;
+			for(FileInteraction f1:fileInts)
+			{
+				for(FileInteraction f2:fileInts)
+				{
+					file1=((Resource)f1.getHead()).getFilename();
+					file2=((Resource)f2.getHead()).getFilename();
+					user1=((Person)f1.getTail()).getName();
+					user2=((Person)f2.getTail()).getName();
+					if( file1.equals(file2)
+							&& ! (user1.equals(user2)))
+							{	//since date doesn't have any meaning here and the interaction between users and the file
+								//can happen on different dates, I chose the dates from f2
+								HashMap<Calendar, String> interactions=f2.getInteraction();
+								iter = interactions.keySet().iterator();
+								while(iter.hasNext()){
+								UserInteractionFinder((Person)f1.getTail(),(Person) f2.getTail(), (Calendar)iter.next(), "Interaction between "+user1+" and "+user2+" over file:"+file2);
+								}
+							}
+				}
+			}
 			for(FileInteraction r:fileInts)
 			{
 				r.printDetails();

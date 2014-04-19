@@ -5,8 +5,12 @@ import java.util.Iterator;
 
 
 public class FileInteraction implements Edge {
-	//change this to calender
+
 	private HashMap<Calendar,String> interaction;
+	public HashMap<Calendar, String> getInteraction() {
+		return interaction;
+	}
+
 	private Resource rsc;
 	private Person user;
 	
